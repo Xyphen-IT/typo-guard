@@ -1,0 +1,44 @@
+name: typo-guard
+arch: amd64
+platform: linux
+version: ${VERSION}
+section: mail
+priority: optional
+maintainer: Xyphen IT <support@xyphen-it.nl>
+description: |
+  Detects mistyped recipient domains in outgoing e-mail.
+  Postfix policy delegation server and HTTP API that flags recipient
+  domains such as ghotmail.com or domains without a valid TLD, with a
+  harvest command that learns delivered domains from KumoMTA logs.
+homepage: https://xyphen-it.nl
+license: Proprietary
+contents:
+  - src: build/typo-guard
+    dst: /usr/bin/typo-guard
+    file_info:
+      mode: 0755
+  - src: packaging/config.json
+    dst: /etc/typo-guard/config.json
+    type: config|noreplace
+    file_info:
+      mode: 0644
+  - src: packaging/systemd/typo-guard.service
+    dst: /lib/systemd/system/typo-guard.service
+    file_info:
+      mode: 0644
+  - src: packaging/systemd/typo-guard-harvest.service
+    dst: /lib/systemd/system/typo-guard-harvest.service
+    file_info:
+      mode: 0644
+  - src: packaging/systemd/typo-guard-harvest.timer
+    dst: /lib/systemd/system/typo-guard-harvest.timer
+    file_info:
+      mode: 0644
+  - src: README.md
+    dst: /usr/share/doc/typo-guard/README.md
+    file_info:
+      mode: 0644
+scripts:
+  postinstall: packaging/scripts/postinst
+  preremove: packaging/scripts/prerm
+  postremove: packaging/scripts/postrm

@@ -1,0 +1,33 @@
+[Unit]
+Description=typo-guard: harvest delivered recipient domains from KumoMTA logs
+Documentation=file:///usr/share/doc/typo-guard/README.md
+ConditionPathIsDirectory=/var/log/kumomta
+# Created by typo-guard.service (StateDirectory); start that first.
+ConditionPathIsDirectory=/var/lib/typo-guard
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/typo-guard harvest --kumo-logs /var/log/kumomta --days 90 --out /var/lib/typo-guard/delivered.txt
+User=root
+ProtectSystem=strict
+ReadOnlyPaths=/var/log/kumomta
+ReadWritePaths=/var/lib/typo-guard
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+PrivateNetwork=yes
+NoNewPrivileges=yes
+# Read kumod-owned logs and write into the DynamicUser-owned state directory.
+CapabilityBoundingSet=CAP_DAC_READ_SEARCH CAP_DAC_OVERRIDE
+RestrictAddressFamilies=AF_UNIX
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+Nice=10
+IOSchedulingClass=idle

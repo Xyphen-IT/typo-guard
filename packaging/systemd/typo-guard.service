@@ -1,0 +1,46 @@
+[Unit]
+Description=typo-guard: flag mistyped recipient domains (Postfix policy service)
+Documentation=file:///usr/share/doc/typo-guard/README.md
+Wants=network-online.target
+After=network-online.target
+# Keep retrying when the listen address (e.g. a Docker bridge) is not up yet.
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/typo-guard serve -config /etc/typo-guard/config.json
+Restart=on-failure
+RestartSec=5s
+DynamicUser=yes
+StateDirectory=typo-guard
+StateDirectoryMode=0755
+UMask=0022
+LimitNOFILE=65536
+
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+ProcSubset=pid
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged
+SystemCallErrorNumber=EPERM
+
+[Install]
+WantedBy=multi-user.target

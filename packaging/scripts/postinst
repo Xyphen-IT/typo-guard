@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+# Units are never enabled or started here; configuration management does that.
+if [ "$1" = "configure" ] && [ -d /run/systemd/system ]; then
+	systemctl daemon-reload >/dev/null 2>&1 || true
+	if [ -n "$2" ] && systemctl is-active --quiet typo-guard.service; then
+		systemctl restart typo-guard.service || echo "typo-guard: restart failed, check journalctl -u typo-guard" >&2
+	fi
+fi
+exit 0

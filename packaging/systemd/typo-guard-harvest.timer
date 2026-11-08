@@ -1,0 +1,10 @@
+[Unit]
+Description=typo-guard: hourly harvest of delivered recipient domains
+
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=5m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

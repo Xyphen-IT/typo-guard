@@ -1,0 +1,27 @@
+{
+  "policy_listen": "127.0.0.1:10041",
+  "policy_idle_timeout": "300s",
+  "policy_max_connections": 1024,
+  "http_listen": "127.0.0.1:10042",
+  "http_allow": [],
+  "mode": "log",
+  "near_miss_policy": "no-mx",
+  "extra_popular_domains": [],
+  "tld_swap_domains": ["gmail.com", "googlemail.com", "icloud.com"],
+  "allowlist_file": "/etc/typo-guard/allowlist.txt",
+  "hosted_domains_file": "/etc/typo-guard/hosted-domains.txt",
+  "delivered_domains_file": "/var/lib/typo-guard/delivered.txt",
+  "allowlist_reload_interval": "10s",
+  "delivered_sync_url": "",
+  "delivered_sync_interval": "1h",
+  "delivered_sync_timeout": "30s",
+  "dns": {
+    "lookup_timeout": "1s",
+    "request_timeout": "2s",
+    "positive_ttl": "1h",
+    "negative_ttl": "10m"
+  },
+  "reject_message": "5.1.2 Het domein {domain} bestaat waarschijnlijk niet, bedoelde u {suggestion}? / The domain {domain} probably does not exist, did you mean {suggestion}?",
+  "reject_message_no_suggestion": "5.1.2 Het domein {domain} bestaat niet of is ongeldig / The domain {domain} does not exist or is invalid",
+  "log_level": "info"
+}
