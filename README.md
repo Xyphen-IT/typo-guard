@@ -95,6 +95,8 @@ annotations only.
   "policy_listen": "127.0.0.1:10041",      // "" disables
   "policy_idle_timeout": "300s",           // read deadline per request on a keep-alive connection
   "policy_max_connections": 1024,
+  "policy_require_auth": false,            // true: only judge SASL-authenticated clients or
+  "policy_trusted_networks": [],           //   these CIDRs; others get DUNNO (shared smtpd with inbound mail)
   "http_listen": "127.0.0.1:10042",        // "" disables
   "http_allow": [],                        // e.g. ["127.0.0.1", "10.0.0.0/8"]; empty = all
   "mode": "log",                           // log | warn | reject

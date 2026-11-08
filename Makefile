@@ -1,4 +1,4 @@
-VERSION ?= 0.1.0
+VERSION ?= 0.2.0
 NFPM_VERSION ?= v2.36.1
 GO ?= go
 export GOTOOLCHAIN := local

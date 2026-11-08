@@ -307,3 +307,25 @@ func TestDeliveredSync(t *testing.T) {
 		t.Error("last success not recorded")
 	}
 }
+
+func TestPolicyRequireAuth(t *testing.T) {
+	s := newTestService(t, `{"mode":"reject","policy_require_auth":true,"policy_trusted_networks":["198.51.100.0/24"],`+noFiles(t.TempDir())+`}`)
+	p := NewPolicyServer(s, time.Second, 1)
+	req := func(sasl, client string) map[string]string {
+		return map[string]string{"protocol_state": "RCPT", "recipient": "a@ghotmail.com", "sasl_username": sasl, "client_address": client}
+	}
+	for name, tc := range map[string]struct {
+		attrs  map[string]string
+		reject bool
+	}{
+		"inbound":       {req("", "192.0.2.10"), false},
+		"authenticated": {req("user@example.org", "192.0.2.10"), true},
+		"trusted":       {req("", "198.51.100.7"), true},
+		"trusted v4in6": {req("", "::ffff:198.51.100.7"), true},
+	} {
+		got := p.decide(context.Background(), tc.attrs)
+		if strings.HasPrefix(got, "REJECT") != tc.reject {
+			t.Errorf("%s: got %q", name, got)
+		}
+	}
+}

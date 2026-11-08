@@ -50,6 +50,10 @@ type Config struct {
 	PolicyListen         string   `json:"policy_listen"`
 	PolicyIdleTimeout    Duration `json:"policy_idle_timeout"`
 	PolicyMaxConnections int      `json:"policy_max_connections"`
+	// Only judge authenticated clients or clients in PolicyTrustedNetworks; the
+	// rest (inbound mail on a shared smtpd) gets DUNNO without any lookup.
+	PolicyRequireAuth     bool     `json:"policy_require_auth"`
+	PolicyTrustedNetworks []string `json:"policy_trusted_networks"`
 	HTTPListen           string   `json:"http_listen"`
 	HTTPAllow            []string `json:"http_allow"`
 
@@ -77,7 +81,8 @@ type Config struct {
 
 	LogLevel string `json:"log_level"`
 
-	httpAllow []netip.Prefix
+	httpAllow     []netip.Prefix
+	policyTrusted []netip.Prefix
 }
 
 var defaultPopular = []string{
@@ -237,16 +242,12 @@ func (c *Config) finish() error {
 			return fmt.Errorf("%s %q: %v", name, addr, err)
 		}
 	}
-	for _, s := range c.HTTPAllow {
-		p, err := netip.ParsePrefix(s)
-		if err != nil {
-			a, aerr := netip.ParseAddr(s)
-			if aerr != nil {
-				return fmt.Errorf("http_allow entry %q is not a CIDR or address", s)
-			}
-			p = netip.PrefixFrom(a, a.BitLen())
-		}
-		c.httpAllow = append(c.httpAllow, p.Masked())
+	var err error
+	if c.httpAllow, err = parsePrefixes("http_allow", c.HTTPAllow); err != nil {
+		return err
+	}
+	if c.policyTrusted, err = parsePrefixes("policy_trusted_networks", c.PolicyTrustedNetworks); err != nil {
+		return err
 	}
 	if c.PolicyMaxConnections <= 0 {
 		return fmt.Errorf("policy_max_connections must be > 0")
@@ -282,4 +283,36 @@ func (c *Config) finish() error {
 		return err
 	}
 	return nil
+}
+
+// parsePrefixes accepts CIDRs and plain addresses.
+func parsePrefixes(name string, list []string) ([]netip.Prefix, error) {
+	var out []netip.Prefix
+	for _, s := range list {
+		p, err := netip.ParsePrefix(s)
+		if err != nil {
+			a, aerr := netip.ParseAddr(s)
+			if aerr != nil {
+				return nil, fmt.Errorf("%s entry %q is not a CIDR or address", name, s)
+			}
+			p = netip.PrefixFrom(a, a.BitLen())
+		}
+		out = append(out, p.Masked())
+	}
+	return out, nil
+}
+
+// policyTrustedClient reports whether addr lies in policy_trusted_networks.
+func (c *Config) policyTrustedClient(addr string) bool {
+	a, err := netip.ParseAddr(addr)
+	if err != nil {
+		return false
+	}
+	a = a.Unmap()
+	for _, p := range c.policyTrusted {
+		if p.Contains(a) {
+			return true
+		}
+	}
+	return false
 }

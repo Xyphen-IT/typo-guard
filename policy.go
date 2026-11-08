@@ -96,6 +96,9 @@ func (p *PolicyServer) decide(ctx context.Context, attrs map[string]string) stri
 	if attrs["protocol_state"] != "RCPT" {
 		return "DUNNO"
 	}
+	if p.svc.cfg.PolicyRequireAuth && attrs["sasl_username"] == "" && !p.svc.cfg.policyTrustedClient(attrs["client_address"]) {
+		return "DUNNO"
+	}
 	v := p.svc.Check(ctx, CheckInfo{
 		Listener: "policy",
 		Rcpt:     attrs["recipient"],
